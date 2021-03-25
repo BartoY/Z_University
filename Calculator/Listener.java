@@ -1,6 +1,5 @@
-package com.itY.Calculator;
+package com.sugonYH.Calculator;
 
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
@@ -8,10 +7,10 @@ import javax.swing.*;
 public class Listener implements ActionListener {
 
     private static JTextField text;
-    StringBuffer s = new StringBuffer();//A StringBuffer allows multiple modifications to a string without generating new unused objects
+    private StringBuffer s = new StringBuffer();//A StringBuffer allows multiple modifications to a string without generating new unused objects
 
-    public Listener(JTextField textField) {
-        text = textField;
+    public Listener(JTextField tF) {
+        text = tF;
     }
 
     @Override
@@ -94,16 +93,16 @@ public class Listener implements ActionListener {
                     } else {
                         ss = s.toString();
                     }
-
-                } else {// Input by keyboard. If it is a symbol plus a number, fill it with zero and assign the input value to SS
-                    if (text.getText().toString().length() == 2) {
-                        StringBuffer stbu = new StringBuffer(text.getText());
-                        ss = stbu.insert(0, 0).toString();
-                    } else {
-                        ss = text.getText().toString();
-                    }
-
                 }
+//                } else {// Input by keyboard. If it is a symbol plus a number, fill it with zero and assign the input value to SS
+//                    if (text.getText().toString().length() == 2) {
+//                        StringBuffer stbu = new StringBuffer(text.getText());
+//                        ss = stbu.insert(0, 0).toString();
+//                    } else {
+//                        ss = text.getText().toString();
+//                    }
+//
+//                }
 
                 String index = "[-]|[+]|[/]|[*]";
                 String number[] = ss.split(index);//The split() method splits the string based on a given regular expression
