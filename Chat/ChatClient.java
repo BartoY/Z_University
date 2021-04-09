@@ -13,12 +13,19 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ChatClient {
-    private JTextArea incoming;
-    private JTextField outgoing;        //input box
+    //private JTextArea incoming;
+    private JTextArea outgoing;        //input box
     private BufferedReader reader;      //Cache the input character stream
     private PrintWriter writer;         //Output stream
     private Socket socket;
     private String clientName;
+
+    //private TextField outgoing = new TextField(25);
+
+    JPanel jPanel = new JPanel();
+    JPanel jPanel2 = new JPanel();
+    JScrollPane jScrollPane = new JScrollPane(jPanel);
+
     /*
     public static void main(String[] args) {
         new SimpleChatClientA().go();
@@ -32,30 +39,29 @@ public class ChatClient {
 
     public void go(){
         JFrame jFrame = new JFrame(clientName);
-        JPanel jPanel = new JPanel();
 
-        //Create a text field
-        incoming = new JTextArea(15,30);
-        incoming.setLineWrap(true);     //Sets whether to wrap a line if it becomes too long
-        incoming.setWrapStyleWord(true);//Sets whether to move a long word to the next line if it becomes too long
-        incoming.setEditable(false);
 
-        //Create a scroll panel and place the text field in it
-        JScrollPane jScrollPane = new JScrollPane(incoming);
-        jScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        jScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        jPanel2.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        jFrame.add(jScrollPane,BorderLayout.CENTER);
+        jPanel.setLayout(new GridLayout(40,1));
+
 
         //Create an input field
-        outgoing = new JTextField(25);
+        outgoing = new JTextArea(6,48);
+        Font font = new Font("Dialog", Font.PLAIN, 18);
+        outgoing.setFont(font);
 
         //Create a send button and create a listener
         JButton sendButton = new JButton("发送");
+        sendButton.setPreferredSize(new Dimension(80,40));
         sendButton.addActionListener(new sendButtonListener());
 
         //Place the above component in the JPanel container
-        jPanel.add(jScrollPane);
-        jPanel.add(outgoing);
-        jPanel.add(sendButton);
+
+        jPanel2.add(outgoing);
+        jPanel2.setBounds(0,450,680,200);
+        jPanel2.add(sendButton);
+        jFrame.add(jPanel2);
 
         //Establish a connection with the server
         setUpNetworking();
@@ -67,9 +73,8 @@ public class ChatClient {
         //Place the JPanel container in the JFrame panel
         jFrame.getContentPane().add(BorderLayout.CENTER,jPanel);
         jFrame.setDefaultCloseOperation(jFrame.EXIT_ON_CLOSE);
-        jFrame.setBounds(100,100,380,330);
+        jFrame.setBounds(200,100,700,700);
         jFrame.setVisible(true);
-
 
     }
 
@@ -87,7 +92,7 @@ public class ChatClient {
 
             //Establish a character output stream with the socket
             writer = new PrintWriter(socket.getOutputStream());
-            incoming.append(clientName+"成功连接服务器..."+"\n");
+            //incoming.append(clientName+"成功连接服务器..."+"\n");
 
         }catch (IOException e){
             e.printStackTrace();
@@ -98,22 +103,35 @@ public class ChatClient {
      * The listener
      */
 
-    class sendButtonListener implements ActionListener{
+    private class sendButtonListener implements ActionListener{
         public void actionPerformed(ActionEvent e){
             //When the send button is clicked, an event is triggered to get the text in the input box and output it to the server
             Date date = new Date();
             SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm:ss");
             String now = sdf.format(date);
 
-            writer.println(now+"\n"+clientName+"："+outgoing.getText());
+            String text = outgoing.getText();
+
+            String message = now+"\n"+clientName+"："+outgoing.getText();
+            FileRecord.writeFile(clientName,message);
+            writer.println(now+"\n"+clientName+"："+outgoing.getText().trim());
             //FileRecord.writeFile(clientName,writer);
             writer.flush();
+
+            JLabel tempLabel = new JLabel(   text + " : 我 "+" "  +"\n");
+            tempLabel.setHorizontalAlignment(JLabel.RIGHT);
+            jPanel.add(tempLabel);
+            tempLabel.revalidate();
+
 
             //Clear the input box text
             outgoing.setText("");
             outgoing.requestFocus();
         }
     }
+
+
+
 
     /**
      * The task of this thread is to continuously read information from the server and load it into a text field
@@ -126,11 +144,24 @@ public class ChatClient {
                 while ((message = reader.readLine())!=null){
                     System.out.println("read"+message);
                     FileRecord.writeFile(clientName,message);
-                    incoming.append(message+"\n");
+                    //incoming.append(message+"\n");
+                    JLabel tempLabel = new JLabel(message);
+                    jPanel.add(tempLabel);
+                    tempLabel.revalidate();
 
                 }
             }catch (Exception e){
                 e.printStackTrace();
+            }finally {
+                if (socket != null) {
+                    try {
+                        socket.close();
+                    } catch (IOException e) {
+                        System.out.println("din关闭失败");
+                        e.printStackTrace();
+                    }
+                }
+
             }
         }
     }
